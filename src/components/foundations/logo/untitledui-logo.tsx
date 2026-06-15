@@ -8,7 +8,7 @@ export const UntitledLogo = (props: HTMLAttributes<HTMLOrSVGElement>) => {
         <img
             src="/brand/comet-logo.svg"
             alt="Comet"
-            className={cx("h-8 w-auto select-none", props.className)}
+            className={cx("h-12 w-auto select-none", props.className)}
         />
     );
 };
