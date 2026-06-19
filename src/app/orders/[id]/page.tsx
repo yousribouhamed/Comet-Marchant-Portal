@@ -19,13 +19,13 @@ import {
 import { Badge, BadgeWithDot } from "@/components/base/badges/badges";
 import { Button } from "@/components/base/buttons/button";
 import { Checkbox } from "@/components/base/checkbox/checkbox";
-import { Input, InputBase } from "@/components/base/input/input";
-import { InputGroup } from "@/components/base/input/input-group";
+import { Input } from "@/components/base/input/input";
 import { Select } from "@/components/base/select/select";
 import { Toggle } from "@/components/base/toggle/toggle";
 import { Dialog, DialogClose, DialogFooter, DialogHeader, DialogPanel, DialogPopup, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { FeaturedIcon } from "@/components/foundations/featured-icon/featured-icon";
 import { CurrencyIcon } from "@/components/foundations/currency-icon";
+import { useClipboard } from "@/hooks/use-clipboard";
 import { cx } from "@/utils/cx";
 
 type Stage = "created" | "pickup" | "in_transit" | "out_for_delivery" | "delivered";
@@ -438,17 +438,8 @@ const InlineCard = ({
 export default function OrderDetailsPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params);
     const order = ORDERS[id] ?? fallback(id);
-    const [copied, setCopied] = useState(false);
-
-    const copyTracking = async () => {
-        try {
-            await navigator.clipboard.writeText(order.trackingUrl);
-            setCopied(true);
-            setTimeout(() => setCopied(false), 1500);
-        } catch {
-            /* noop */
-        }
-    };
+    const { copied, copy } = useClipboard();
+    const isTrackingCopied = copied === "tracking";
 
     return (
         <div className="flex flex-col gap-6 px-4 py-6 md:px-8 md:py-8">
@@ -619,16 +610,27 @@ export default function OrderDetailsPage({ params }: { params: Promise<{ id: str
                 {/* Right column — Order tracking */}
                 <div className="flex flex-col gap-6">
                     <Section title="Order tracking">
-                        <InputGroup
-                            label="Shareable tracking link"
-                            trailingAddon={
-                                <Button size="md" color="tertiary" onClick={copyTracking} iconLeading={copied ? Check : Copy01}>
-                                    {copied ? "Copied" : "Copy"}
+                        <div className="flex flex-col gap-1.5">
+                            <span className="text-sm font-medium text-secondary">Shareable tracking link</span>
+                            <div className="flex w-full items-center gap-2 rounded-lg border border-secondary bg-secondary_subtle px-3 py-2">
+                                <code
+                                    className="min-w-0 flex-1 truncate font-mono text-sm text-secondary"
+                                    title={order.trackingUrl}
+                                    aria-label="Shareable tracking link"
+                                >
+                                    {order.trackingUrl}
+                                </code>
+                                <Button
+                                    size="sm"
+                                    color="secondary"
+                                    iconLeading={isTrackingCopied ? Check : Copy01}
+                                    onClick={() => copy(order.trackingUrl, "tracking")}
+                                    className={cx("shrink-0", isTrackingCopied && "text-success-primary")}
+                                >
+                                    {isTrackingCopied ? "Copied" : "Copy"}
                                 </Button>
-                            }
-                        >
-                            <InputBase value={order.trackingUrl} readOnly aria-label="Tracking URL" />
-                        </InputGroup>
+                            </div>
+                        </div>
 
                         <Button color="secondary" size="md" iconLeading={RefreshCw01}>
                             Resend to customer
