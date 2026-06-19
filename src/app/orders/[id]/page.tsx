@@ -7,6 +7,7 @@ import {
     Copy01,
     Download01,
     Edit01,
+    InfoCircle,
     MarkerPin01,
     Package,
     Phone,
@@ -18,6 +19,8 @@ import {
 } from "@untitledui/icons";
 import { Badge, BadgeWithDot } from "@/components/base/badges/badges";
 import { Button } from "@/components/base/buttons/button";
+import { ButtonUtility } from "@/components/base/buttons/button-utility";
+import { Notification } from "@/components/base/notifications/notification";
 import { Checkbox } from "@/components/base/checkbox/checkbox";
 import { Input } from "@/components/base/input/input";
 import { Select } from "@/components/base/select/select";
@@ -233,9 +236,14 @@ const EditCustomerDialog = ({ order }: { order: Detail }) => {
         <Dialog>
             <DialogTrigger
                 render={(props) => (
-                    <Button {...props} color="tertiary" size="sm" iconLeading={Edit01}>
-                        Edit customer
-                    </Button>
+                    <ButtonUtility
+                        {...props}
+                        color="secondary"
+                        size="sm"
+                        icon={Edit01}
+                        tooltip="Edit customer"
+                        aria-label="Edit customer"
+                    />
                 )}
             />
             <DialogPopup className="max-w-md">
@@ -303,9 +311,14 @@ const EditOrderDialog = ({ order }: { order: Detail }) => {
         <Dialog>
             <DialogTrigger
                 render={(props) => (
-                    <Button {...props} color="tertiary" size="sm" iconLeading={Edit01}>
-                        Edit order
-                    </Button>
+                    <ButtonUtility
+                        {...props}
+                        color="secondary"
+                        size="sm"
+                        icon={Edit01}
+                        tooltip="Edit order"
+                        aria-label="Edit order"
+                    />
                 )}
             />
             <DialogPopup className="max-w-md">
@@ -530,10 +543,12 @@ export default function OrderDetailsPage({ params }: { params: Promise<{ id: str
                         </div>
 
                         {order.customer.note && (
-                            <div className="rounded-lg border border-secondary bg-secondary_subtle p-3">
-                                <span className="text-xs font-semibold text-tertiary">Customer note</span>
-                                <p className="mt-1 text-sm text-secondary">{order.customer.note}</p>
-                            </div>
+                            <Notification
+                                icon={InfoCircle}
+                                color="brand"
+                                title="Customer note"
+                                description={order.customer.note}
+                            />
                         )}
                     </Section>
 
