@@ -30,9 +30,11 @@ export default function ConfigurationsPage() {
             </header>
 
             <Tabs defaultSelectedKey="plans">
-                <TabList type="button-border" size="md" items={tabs}>
-                    {(tab) => <Tab id={tab.id}>{tab.label}</Tab>}
-                </TabList>
+                <div className="max-w-full overflow-x-auto">
+                    <TabList type="button-border" size="md" items={tabs} className="w-max min-w-max self-start">
+                        {(tab) => <Tab id={tab.id}>{tab.label}</Tab>}
+                    </TabList>
+                </div>
 
                 <TabPanel id="plans" className="mt-8">
                     <PricingSection />

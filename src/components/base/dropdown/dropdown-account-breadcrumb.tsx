@@ -11,8 +11,8 @@ import { RadioButtonBase } from "../radio-buttons/radio-buttons";
 const accounts = [
     {
         id: "caitlyn",
-        name: "Caitlyn King",
-        email: "caitlyn@untitledui.com",
+        name: "Yousri Bouhamed",
+        email: "yousri@bellman.media",
         avatar: "https://www.untitledui.com/images/avatars/caitlyn-king?fm=webp&q=80",
         status: "online",
     },

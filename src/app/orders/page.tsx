@@ -86,44 +86,55 @@ const StorageBadge = ({ storage }: { storage: Storage }) => {
     );
 };
 
-const BoxChips = ({ boxes }: { boxes: Order["boxes"] }) => (
-    <AriaDialogTrigger>
-        <AriaButton
-            aria-label="Show box breakdown by size"
-            className="flex cursor-pointer items-center gap-1 rounded-md border border-secondary px-1.5 py-0.5 text-xs font-medium text-secondary outline-brand transition duration-100 ease-linear hover:bg-primary_hover focus-visible:outline-2 focus-visible:outline-offset-2 data-pressed:bg-primary_hover"
-        >
-            <Package className="size-3 shrink-0" aria-hidden="true" />
-            <DotsHorizontal className="size-3 shrink-0" aria-hidden="true" />
-        </AriaButton>
-        <AriaPopover
-            placement="bottom"
-            offset={6}
-            className="data-entering:animate-in data-exiting:animate-out data-entering:fade-in-0 data-exiting:fade-out-0 data-entering:zoom-in-95 data-exiting:zoom-out-95"
-        >
-            <AriaDialog className="rounded-lg border border-secondary bg-primary p-2 shadow-lg outline-hidden">
-                <div className="flex items-center gap-1">
-                    {(["s", "m", "l"] as const).map((size) => {
-                        const count = boxes[size];
-                        return (
-                            <span
-                                key={size}
-                                className={cx(
-                                    "flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-xs font-medium tabular-nums",
-                                    count > 0 ? "border-secondary text-secondary" : "border-secondary/60 text-quaternary",
-                                )}
-                                title={`${size.toUpperCase()} boxes: ${count}`}
-                            >
-                                <Package className="size-3 shrink-0" aria-hidden="true" />
-                                <span className="uppercase">{size}</span>
-                                <span>{count}</span>
-                            </span>
-                        );
-                    })}
-                </div>
-            </AriaDialog>
-        </AriaPopover>
-    </AriaDialogTrigger>
+const BoxChipRow = ({ boxes, compact = false }: { boxes: Order["boxes"]; compact?: boolean }) => (
+    <div className="flex items-center gap-1">
+        {(["s", "m", "l"] as const).map((size) => {
+            const count = boxes[size];
+            return (
+                <span
+                    key={size}
+                    className={cx(
+                        "flex items-center gap-1 rounded-md border text-xs font-medium tabular-nums",
+                        compact ? "px-1.5 py-0.5" : "px-2 py-1",
+                        count > 0 ? "border-secondary text-secondary" : "border-secondary/60 text-quaternary",
+                    )}
+                    title={`${size.toUpperCase()} boxes: ${count}`}
+                >
+                    <Package className="size-3 shrink-0" aria-hidden="true" />
+                    <span className="uppercase">{size}</span>
+                    <span>{count}</span>
+                </span>
+            );
+        })}
+    </div>
 );
+
+const BoxChips = ({ boxes, inline = false }: { boxes: Order["boxes"]; inline?: boolean }) => {
+    if (inline) {
+        return <BoxChipRow boxes={boxes} />;
+    }
+
+    return (
+        <AriaDialogTrigger>
+            <AriaButton
+                aria-label="Show box breakdown by size"
+                className="flex cursor-pointer items-center gap-1 rounded-md border border-secondary px-1.5 py-0.5 text-xs font-medium text-secondary outline-brand transition duration-100 ease-linear hover:bg-primary_hover focus-visible:outline-2 focus-visible:outline-offset-2 data-pressed:bg-primary_hover"
+            >
+                <Package className="size-3 shrink-0" aria-hidden="true" />
+                <DotsHorizontal className="size-3 shrink-0" aria-hidden="true" />
+            </AriaButton>
+            <AriaPopover
+                placement="bottom"
+                offset={6}
+                className="data-entering:animate-in data-exiting:animate-out data-entering:fade-in-0 data-exiting:fade-out-0 data-entering:zoom-in-95 data-exiting:zoom-out-95"
+            >
+                <AriaDialog className="rounded-lg border border-secondary bg-primary p-2 shadow-lg outline-hidden">
+                    <BoxChipRow boxes={boxes} compact />
+                </AriaDialog>
+            </AriaPopover>
+        </AriaDialogTrigger>
+    );
+};
 
 const totalBoxes = (b: Order["boxes"]) => b.s + b.m + b.l;
 
@@ -165,7 +176,7 @@ const OrderCard = ({ order }: { order: Order }) => (
         </div>
 
         <div className="flex items-center justify-between border-t border-secondary pt-3">
-            <BoxChips boxes={order.boxes} />
+            <BoxChips boxes={order.boxes} inline />
             <StorageBadge storage={order.storage} />
         </div>
     </div>

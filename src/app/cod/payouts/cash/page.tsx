@@ -22,6 +22,7 @@ import { ProgressBar } from "@/components/base/progress-indicators/progress-indi
 import { Table, TableCard } from "@/components/application/table/table";
 import { TablePagination, useTablePagination } from "@/components/application/table/table-pagination";
 import { FeaturedIcon } from "@/components/foundations/featured-icon/featured-icon";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { CurrencyIcon } from "@/components/foundations/currency-icon";
 import { cx } from "@/utils/cx";
 
@@ -182,16 +183,14 @@ export default function CashPayoutPage() {
                     </header>
                 </div>
 
-                <div className="flex items-start gap-3 rounded-xl border border-warning bg-warning-secondary p-4">
-                    <FeaturedIcon icon={AlertCircle} color="warning" theme="light" size="sm" />
-                    <div className="flex flex-col gap-0.5">
-                        <p className="text-sm font-semibold text-primary">Eligibility rule</p>
-                        <p className="text-sm text-secondary">
-                            Transactions are only eligible for payout after 7 days from their collation date. Pending
-                            ones will appear here once they pass the waiting period.
-                        </p>
-                    </div>
-                </div>
+                <Alert variant="warning">
+                    <AlertCircle />
+                    <AlertTitle>Eligibility rule</AlertTitle>
+                    <AlertDescription>
+                        Transactions are only eligible for payout after 7 days from their collation date. Pending
+                        ones will appear here once they pass the waiting period.
+                    </AlertDescription>
+                </Alert>
 
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     <KpiCard icon={Wallet02} label="Eligible total" amount={eligibleTotal} color="success" />

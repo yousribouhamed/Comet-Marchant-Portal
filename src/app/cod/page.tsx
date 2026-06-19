@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import {
     ArrowUp,
     Calendar,
+    CheckCircle,
     ChevronDown,
     Clock,
     Coins01,
@@ -14,6 +15,7 @@ import {
     Hourglass03,
     SearchMd,
     Wallet02,
+    XCircle,
 } from "@untitledui/icons";
 import { Badge, BadgeWithDot } from "@/components/base/badges/badges";
 import { Button } from "@/components/base/buttons/button";
@@ -36,6 +38,7 @@ import {
     DrawerTitle,
 } from "@/components/ui/drawer";
 import { FeaturedIcon } from "@/components/foundations/featured-icon/featured-icon";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { CurrencyIcon } from "@/components/foundations/currency-icon";
 import { cx } from "@/utils/cx";
 
@@ -51,6 +54,17 @@ type Order = {
     status: OrderStatus;
     label: "Normal" | "Express" | "Bulk";
     time: string;
+};
+
+type PayoutStatus = "requested" | "approved" | "declined";
+
+type PayoutRequest = {
+    id: string;
+    status: PayoutStatus;
+    amount: number;
+    method: "Cash" | "Pay-Online";
+    requestedAt: string;
+    resolution?: string;
 };
 
 const orders: Order[] = [
@@ -96,10 +110,50 @@ const orders: Order[] = [
     },
 ];
 
+const payoutHistory: PayoutRequest[] = [
+    {
+        id: "PO-1042",
+        status: "requested",
+        amount: 900,
+        method: "Cash",
+        requestedAt: "Today, 10:24 AM",
+        resolution: "Expected review today",
+    },
+    {
+        id: "PO-1038",
+        status: "approved",
+        amount: 1240,
+        method: "Pay-Online",
+        requestedAt: "Jun 16, 2026",
+        resolution: "Paid to bank account",
+    },
+    {
+        id: "PO-1031",
+        status: "declined",
+        amount: 460,
+        method: "Cash",
+        requestedAt: "Jun 12, 2026",
+        resolution: "Orders still within hold period",
+    },
+];
+
 const STATUS_STYLE: Record<OrderStatus, { label: string; color: "warning" | "success" | "error" }> = {
     pending: { label: "Pending", color: "warning" },
     collected: { label: "Collected", color: "success" },
     failed: { label: "Failed", color: "error" },
+};
+
+const PAYOUT_STATUS_STYLE: Record<
+    PayoutStatus,
+    {
+        label: string;
+        color: "warning" | "success" | "error";
+        icon: typeof Hourglass03;
+    }
+> = {
+    requested: { label: "Requested", color: "warning", icon: Hourglass03 },
+    approved: { label: "Approved", color: "success", icon: CheckCircle },
+    declined: { label: "Declined", color: "error", icon: XCircle },
 };
 
 const transactionFilterOptions = [
@@ -338,6 +392,8 @@ export default function CodPage() {
                             </div>
                         )}
                     </div>
+
+                    <PayoutHistoryCard items={payoutHistory} />
                 </aside>
             </div>
 
@@ -565,6 +621,108 @@ const OrdersTable = ({ orders }: { orders: Order[] }) => {
             </>
         )}
     </TableCard.Root>
+    );
+};
+
+const PayoutHistoryCard = ({ items }: { items: PayoutRequest[] }) => {
+    const requested = items.filter((item) => item.status === "requested");
+    const approved = items.filter((item) => item.status === "approved");
+    const declined = items.filter((item) => item.status === "declined");
+    const latestRequested = requested[0];
+
+    return (
+        <section className="flex flex-col gap-4 rounded-2xl border border-secondary bg-primary p-5 shadow-xs">
+            <div className="flex items-start justify-between gap-3">
+                <div className="flex flex-col gap-1">
+                    <h2 className="text-sm font-semibold text-primary">Payouts history</h2>
+                    <p className="text-xs text-tertiary">Track request status before starting another payout.</p>
+                </div>
+                <BadgeWithDot color={latestRequested ? "warning" : "success"} type="pill-color" size="sm">
+                    {latestRequested ? "Pending review" : "Clear"}
+                </BadgeWithDot>
+            </div>
+
+            {latestRequested && (
+                <Alert variant="warning">
+                    <Hourglass03 />
+                    <AlertTitle className="flex items-center justify-between gap-3">
+                        <span>Pending payout request</span>
+                        <span className="flex items-baseline gap-1 text-sm font-semibold text-primary">
+                            <CurrencyIcon className="size-3.5 self-center" />
+                            {formatAmount(latestRequested.amount)}
+                        </span>
+                    </AlertTitle>
+                    <AlertDescription>
+                        {latestRequested.id} · {latestRequested.method} · {latestRequested.requestedAt}
+                    </AlertDescription>
+                </Alert>
+            )}
+
+            <div className="grid grid-cols-3 gap-2">
+                <PayoutStatusSummary label="Requested payouts" count={requested.length} color="warning" />
+                <PayoutStatusSummary label="Approved payouts" count={approved.length} color="success" />
+                <PayoutStatusSummary label="Declined payouts" count={declined.length} color="error" />
+            </div>
+
+            <div className="flex flex-col divide-y divide-secondary">
+                {items.map((item) => {
+                    const status = PAYOUT_STATUS_STYLE[item.status];
+                    const StatusIcon = status.icon;
+
+                    return (
+                        <div key={item.id} className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
+                            <div className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-secondary_subtle">
+                                <StatusIcon className="size-4 text-fg-quaternary" aria-hidden="true" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                                <div className="flex items-start justify-between gap-3">
+                                    <div className="min-w-0">
+                                        <p className="truncate text-sm font-medium text-primary">{item.id}</p>
+                                        <p className="text-xs text-tertiary">{item.method} · {item.requestedAt}</p>
+                                    </div>
+                                    <div className="flex shrink-0 flex-col items-end gap-1">
+                                        <span className="flex items-baseline gap-1 text-sm font-semibold text-primary">
+                                            <CurrencyIcon className="size-3.5 self-center" />
+                                            {formatAmount(item.amount)}
+                                        </span>
+                                        <BadgeWithDot color={status.color} type="pill-color" size="sm">
+                                            {status.label}
+                                        </BadgeWithDot>
+                                    </div>
+                                </div>
+                                {item.resolution && <p className="mt-1 text-xs text-secondary">{item.resolution}</p>}
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+        </section>
+    );
+};
+
+const PayoutStatusSummary = ({
+    label,
+    count,
+    color,
+}: {
+    label: string;
+    count: number;
+    color: "warning" | "success" | "error";
+}) => {
+    const dotColor = {
+        warning: "bg-fg-warning-primary",
+        success: "bg-fg-success-primary",
+        error: "bg-fg-error-primary",
+    }[color];
+
+    return (
+        <div className="rounded-lg border border-secondary bg-secondary_subtle px-3 py-2">
+            <p className="text-lg font-semibold text-primary">{count}</p>
+            <div className="mt-1 flex items-start gap-1.5 text-xs font-medium text-secondary">
+                <span className={cx("mt-1.5 size-1.5 shrink-0 rounded-full", dotColor)} aria-hidden="true" />
+                <span className="leading-snug">{label}</span>
+            </div>
+        </div>
     );
 };
 

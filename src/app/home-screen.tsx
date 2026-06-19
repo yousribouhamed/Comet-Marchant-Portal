@@ -4,6 +4,7 @@ import type { FC } from "react";
 import { useState } from "react";
 import {
     ArrowDown,
+    ArrowRight,
     ArrowUp,
     CheckCircle,
     Coins01,
@@ -30,6 +31,7 @@ import {
 import { Badge } from "@/components/base/badges/badges";
 import { Button } from "@/components/base/buttons/button";
 import { Select } from "@/components/base/select/select";
+import { Table } from "@/components/application/table/table";
 import { FeaturedIcon } from "@/components/foundations/featured-icon/featured-icon";
 import { CurrencyIcon } from "@/components/foundations/currency-icon";
 import { cx } from "@/utils/cx";
@@ -83,6 +85,23 @@ const recentOrders: RecentOrder[] = [
     { id: "5", ref: "1321", customer: "Mike Test", amount: 460, status: { label: "New", color: "blue" } },
     { id: "2", ref: "h2", customer: "Mike Test", amount: 320, status: { label: "New", color: "blue" } },
 ];
+
+type Invoice = {
+    id: string;
+    label: string;
+    period: string;
+    amount: number;
+    dueDate: string;
+    status: { label: string; color: "warning" | "success" | "gray" };
+};
+
+const invoices: Invoice[] = [
+    { id: "INV-2026-07", label: "Growth plan", period: "Jun 12 – Jul 12, 2026", amount: 49, dueDate: "Jul 18, 2026", status: { label: "Upcoming", color: "warning" } },
+    { id: "INV-2026-06", label: "Growth plan", period: "May 12 – Jun 12, 2026", amount: 49, dueDate: "Jun 18, 2026", status: { label: "Paid", color: "success" } },
+    { id: "INV-2026-05", label: "Add-on · Telephony", period: "May 1 – May 31, 2026", amount: 12, dueDate: "May 31, 2026", status: { label: "Paid", color: "success" } },
+];
+
+const nextInvoice = invoices.find((i) => i.status.label === "Upcoming")!;
 
 const formatAmount = (value: number) =>
     value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -185,6 +204,35 @@ const Card = ({ title, action, children }: { title: string; action?: React.React
     </div>
 );
 
+const SectionHeader = ({
+    icon: Icon,
+    title,
+    description,
+    href,
+    actionLabel,
+    color,
+}: {
+    icon: FC<{ className?: string }>;
+    title: string;
+    description: string;
+    href: string;
+    actionLabel: string;
+    color: "brand" | "success" | "warning" | "gray";
+}) => (
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-3">
+            <FeaturedIcon icon={Icon} color={color} theme="light" size="md" />
+            <div className="flex flex-col">
+                <h2 className="text-lg font-semibold text-primary">{title}</h2>
+                <p className="text-sm text-tertiary">{description}</p>
+            </div>
+        </div>
+        <Button color="link-color" size="sm" href={href} iconTrailing={ArrowRight}>
+            {actionLabel}
+        </Button>
+    </div>
+);
+
 /* ---------------------------------- screen --------------------------------- */
 
 export const HomeScreen = () => {
@@ -230,7 +278,17 @@ export const HomeScreen = () => {
                 <KpiCard icon={CheckCircle} label="Delivery success" value={`${deliveredRate}%`} color="brand" trend={{ value: "3.1%", direction: "down" }} />
             </div>
 
-            {/* Charts row */}
+            {/* ───────────── ORDERS ───────────── */}
+            <section className="flex flex-col gap-4">
+                <SectionHeader
+                    icon={Package}
+                    title="Orders"
+                    description="Pipeline activity and pickup → delivery status."
+                    href="/orders"
+                    actionLabel="View all orders"
+                    color="brand"
+                />
+
             <div className="grid gap-6 lg:grid-cols-3">
                 <div className="lg:col-span-2">
                     <Card
@@ -321,7 +379,67 @@ export const HomeScreen = () => {
                 </Card>
             </div>
 
-            {/* COD + recent orders */}
+                <Card
+                    title="Recent orders"
+                    action={
+                        <Button color="link-color" size="sm" href="/orders">
+                            View all
+                        </Button>
+                    }
+                >
+                    <div className="-mx-5 -mb-5 overflow-x-auto">
+                        <Table aria-label="Recent orders">
+                            <Table.Header>
+                                <Table.Head id="order" isRowHeader label="Order" />
+                                <Table.Head id="customer" label="Customer" />
+                                <Table.Head id="reference" label="Reference" />
+                                <Table.Head id="amount" label="Amount" />
+                                <Table.Head id="status" label="Status" />
+                            </Table.Header>
+                            <Table.Body items={recentOrders}>
+                                {(order) => (
+                                    <Table.Row id={order.id}>
+                                        <Table.Cell>
+                                            <Button color="link-color" size="sm" href={`/orders/${order.id}`}>
+                                                #{order.id}
+                                            </Button>
+                                        </Table.Cell>
+                                        <Table.Cell>
+                                            <span className="text-sm font-medium text-primary">{order.customer}</span>
+                                        </Table.Cell>
+                                        <Table.Cell>
+                                            <span className="text-sm text-tertiary">{order.ref}</span>
+                                        </Table.Cell>
+                                        <Table.Cell>
+                                            <span className="flex items-baseline gap-1 text-sm font-semibold text-primary">
+                                                <CurrencyIcon className="size-3 self-center" />
+                                                {formatAmount(order.amount)}
+                                            </span>
+                                        </Table.Cell>
+                                        <Table.Cell>
+                                            <Badge color={order.status.color} type="pill-color" size="sm">
+                                                {order.status.label}
+                                            </Badge>
+                                        </Table.Cell>
+                                    </Table.Row>
+                                )}
+                            </Table.Body>
+                        </Table>
+                    </div>
+                </Card>
+            </section>
+
+            {/* ───────────── COD ───────────── */}
+            <section className="flex flex-col gap-4">
+                <SectionHeader
+                    icon={Coins01}
+                    title="COD"
+                    description="Cash-on-delivery collections and merchant payouts."
+                    href="/cod"
+                    actionLabel="Open COD dashboard"
+                    color="success"
+                />
+
             <div className="grid gap-6 lg:grid-cols-3">
                 <div className="lg:col-span-2">
                     <Card
@@ -348,37 +466,91 @@ export const HomeScreen = () => {
                     </Card>
                 </div>
 
-                <Card
-                    title="Recent orders"
-                    action={
-                        <Button color="link-color" size="sm" href="/orders">
-                            View all
+                <div className="flex flex-col gap-4">
+                    <div className="flex flex-1 flex-col gap-1 rounded-2xl border border-secondary bg-primary p-5 shadow-xs">
+                        <span className="text-sm font-medium text-tertiary">Available to payout</span>
+                        <span className="flex items-baseline gap-1.5">
+                            <CurrencyIcon className="size-5 self-center text-primary" />
+                            <span className="text-display-xs font-semibold text-primary">{formatAmount(2610)}</span>
+                        </span>
+                        <Button color="primary" size="sm" href="/cod" className="mt-3 w-full">
+                            Request payout
                         </Button>
-                    }
-                >
-                    <ul className="flex flex-col divide-y divide-secondary">
-                        {recentOrders.map((o) => (
-                            <li key={o.id} className="flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0">
-                                <div className="flex min-w-0 flex-col">
-                                    <span className="truncate text-sm font-medium text-primary">{o.customer}</span>
-                                    <span className="text-xs text-tertiary">
-                                        #{o.id} · {o.ref}
-                                    </span>
-                                </div>
-                                <div className="flex flex-col items-end gap-1">
-                                    <span className="flex items-baseline gap-1 text-sm font-semibold text-primary">
-                                        <CurrencyIcon className="size-3 self-center" />
-                                        {formatAmount(o.amount)}
-                                    </span>
-                                    <Badge color={o.status.color} type="pill-color" size="sm">
-                                        {o.status.label}
-                                    </Badge>
-                                </div>
-                            </li>
-                        ))}
-                    </ul>
-                </Card>
+                    </div>
+                    <div className="flex flex-1 flex-col gap-1 rounded-2xl border border-secondary bg-primary p-5 shadow-xs">
+                        <span className="text-sm font-medium text-tertiary">Pending payout</span>
+                        <span className="flex items-baseline gap-1.5">
+                            <CurrencyIcon className="size-5 self-center text-primary" />
+                            <span className="text-display-xs font-semibold text-primary">{formatAmount(3050)}</span>
+                        </span>
+                        <span className="mt-2 text-xs text-tertiary">Released after 7 days · 1 request in review</span>
+                    </div>
+                </div>
             </div>
+            </section>
+
+            {/* ───────────── INVOICES ───────────── */}
+            <section className="flex flex-col gap-4">
+                <SectionHeader
+                    icon={File02}
+                    title="Invoices"
+                    description="Upcoming bills and recent billing history."
+                    href="/invoices"
+                    actionLabel="View all invoices"
+                    color="gray"
+                />
+
+                <div className="grid gap-6 lg:grid-cols-3">
+                    {/* Next due card */}
+                    <Card title="Next due" action={<Badge color="warning" type="pill-color" size="sm">{nextInvoice.status.label}</Badge>}>
+                        <div className="flex flex-col gap-1">
+                            <span className="text-sm font-medium text-tertiary">{nextInvoice.label}</span>
+                            <span className="flex items-baseline gap-1.5">
+                                <CurrencyIcon className="size-5 self-center text-primary" />
+                                <span className="text-display-xs font-semibold text-primary">{formatAmount(nextInvoice.amount)}</span>
+                            </span>
+                            <span className="text-xs text-tertiary">Due {nextInvoice.dueDate} · {nextInvoice.id}</span>
+                        </div>
+                        <Button color="secondary" size="sm" href="/invoices" className="mt-1 w-full">
+                            View invoice
+                        </Button>
+                    </Card>
+
+                    {/* Recent invoices list */}
+                    <div className="lg:col-span-2">
+                        <Card
+                            title="Recent invoices"
+                            action={
+                                <Button color="link-color" size="sm" href="/invoices">
+                                    View all
+                                </Button>
+                            }
+                        >
+                            <ul className="flex flex-col divide-y divide-secondary">
+                                {invoices.map((inv) => (
+                                    <li key={inv.id} className="flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0">
+                                        <div className="flex min-w-0 flex-col">
+                                            <span className="truncate text-sm font-medium text-primary">{inv.label}</span>
+                                            <span className="text-xs text-tertiary">
+                                                {inv.id} · {inv.period}
+                                            </span>
+                                        </div>
+                                        <div className="flex flex-col items-end gap-1">
+                                            <span className="flex items-baseline gap-1 text-sm font-semibold text-primary">
+                                                <CurrencyIcon className="size-3 self-center" />
+                                                {formatAmount(inv.amount)}
+                                            </span>
+                                            <Badge color={inv.status.color} type="pill-color" size="sm">
+                                                {inv.status.label}
+                                            </Badge>
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
+                        </Card>
+                    </div>
+                </div>
+            </section>
 
             {/* Section shortcuts */}
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

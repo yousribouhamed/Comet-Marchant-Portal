@@ -121,18 +121,18 @@
     --color-alpha-white: rgb(255 255 255);
     --color-alpha-black: rgb(0 0 0);
 
-    --color-brand-25: #f7fefd;
-    --color-brand-50: #f0fdfb;
-    --color-brand-100: #cbfcf7;
-    --color-brand-200: #96f9f0;
-    --color-brand-300: #5aeee5;
-    --color-brand-400: #28d9d4;
-    --color-brand-500: #0fbdbb;
-    --color-brand-600: #099798;
-    --color-brand-700: #0c7779;
-    --color-brand-800: #0f5d60;
-    --color-brand-900: #114f50;
-    --color-brand-950: #032d30;
+    --color-brand-25: #f7f8fb;
+    --color-brand-50: #eceef4;
+    --color-brand-100: #d5d9e7;
+    --color-brand-200: #b6bdd6;
+    --color-brand-300: #8f9ac1;
+    --color-brand-400: #6574a9;
+    --color-brand-500: #3e5194;
+    --color-brand-600: #374782;
+    --color-brand-700: #2f3e70;
+    --color-brand-800: #26325c;
+    --color-brand-900: #1f294a;
+    --color-brand-950: #141a2f;
 
     /* Neutral / Gray palette override */
     --color-neutral-25: #fcfdfe;
